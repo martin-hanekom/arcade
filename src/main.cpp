@@ -4,7 +4,7 @@
 int main(int argc, char** argv)
 {
     std::cout << "Arcade" << std::endl;
-    Arcade arcade;
-    arcade.reload();
+    Arcade arcade(1200, 800, "Arcade");
+    arcade.run();
     return 0;
 }

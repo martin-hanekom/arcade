@@ -1,7 +1,7 @@
 IDIR=include
 CC=g++
 CFLAGS=-I$(IDIR)
-LIBS=-lsfml-graphics -lsfml-system
+LIBS=-lsfml-graphics -lsfml-system -lsfml-window
 SDIR=src
 ODIR=build
 
