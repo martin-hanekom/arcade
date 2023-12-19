@@ -1,21 +1,39 @@
-#ifndef GAME_HPP
-#define GAME_HPP
+#ifndef GAME_H
+#define GAME_H
 
+#include <iostream>
+#include <memory>
+#include <stack>
 #include <SFML/Graphics.hpp>
+#include "entity.hpp"
 
-class Entity
+namespace game
+{
+
+class Menu: public Entity
 {
 public:
-    virtual void update(sf::Int64 us) = 0;
-    virtual void draw(sf::RenderWindow const& window) const = 0;
+    Menu(sf::Vector2f size, sf::Font const& font);
+    void draw(sf::RenderWindow& window) const;
+
+private:
+    sf::Text main;
+    sf::Text menu;
 };
 
 class Game
 {
 public:
-    virtual void handle(sf::Event const& event) = 0;
-    virtual void update(sf::Int64 us) = 0;
-    virtual void draw(sf::RenderWindow const& window) const = 0;
+    Game(sf::Vector2f size, std::string const& title);
+    void run();
+
+private:
+    sf::Vector2f size;
+    sf::RenderWindow window;
+    Menu menu;
+    std::unique_ptr<Entity> game;
 };
+
+}
 
 #endif

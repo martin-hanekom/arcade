@@ -8,7 +8,7 @@ ODIR=build
 _DEPS=*.hpp
 DEPS=$(patsubst %,$(IDIR)/%,$(_DEPS))
 
-_OBJ=main.o arcade.o
+_OBJ=main.o resource.o
 OBJ=$(patsubst %,$(ODIR)/%,$(_OBJ))
 
 $(ODIR)/%.o: $(SDIR)/%.cpp
