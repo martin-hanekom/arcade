@@ -4,73 +4,63 @@
 #include <iostream>
 #include <unordered_map>
 #include <string>
-
 #include "entity.hpp"
 
-class Gun: public Entity
+namespace bubbles
+{
+
+class Bullet: public Entity
 {
 public:
-    void draw(sf::RenderWindow& window) const override;
+    Bullet(sf::Vector2f pos, float angle);
+    void update(float dt);
+    void draw() const;
 
-private:
+    static constexpr float Speed {1000.0f};
+    inline static const sf::Vector2f BulletSize {1.0f, 5.0f};
+
     sf::RectangleShape body;
+    sf::Vector2f const momentum;
 };
 
 class Player: public Entity
 {
 public:
-    Player(sf::Vector2f initPos);
-    bool handle(sf::Event const& event) override;
-    void update(sf::Int64 us) override;
-    void draw(sf::RenderWindow& window) const override;
-    void resize();
+    Player();
+    bool handle(sf::Event const& event);
+    void update(float dt);
+    void draw() const;
+    void setHealth(int value);
+    sf::Vector2f gunPos() const;
 
-private:
     static constexpr unsigned MaxHealth {25u};
     static constexpr unsigned HatRadius {10u};
+    inline static const sf::Vector2f GunSize {3.0f, 15.0f};
+    static constexpr float Speed {100.0f};
 
+    int health;
+    sf::Vector2f pos;
+    sf::Vector2f momentum;
     sf::CircleShape body;
     sf::CircleShape hat;
-    Gun gun;
-    sf::Vector2f pos;
-    unsigned health;
-};
-
-class Menu: public Entity
-{
-public:
-    Menu(sf::Vector2f size, sf::Font const& font);
-    bool handle(sf::Event const& event) override;
-    void draw(sf::RenderWindow& window) const override;
-    
-private:
-    static std::string_view constexpr splashText {"Press Space to Play!"};
-
-    void setSplash(std::string const& text);
-
-    sf::Text splash;
-    sf::Vector2f size;
+    sf::RectangleShape gun;
+    sf::Text info;
 };
 
 class Bubbles: public Entity
 {
 public:
-    enum class State: unsigned
-    {
-        Pause,
-        Play,
-    };
-
-    Bubbles(sf::Vector2f size, sf::Font const& font);
-    bool handle(sf::Event const& event) override;
-    void update(sf::Int64 us) override;
-    void draw(sf::RenderWindow& window) const override;
+    Bubbles();
+    bool handle(sf::Event const& event);
+    void update(float dt);
+    void draw() const;
 
 private:
-    State state;
     Player player;
-    Menu menu;
-    sf::Vector2f size;
+    std::vector<Bullet> bullets;
+    sf::Text splash;
 };
+
+}
 
 #endif

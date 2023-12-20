@@ -7,8 +7,8 @@ class Entity
 {
 public:
     virtual bool handle(sf::Event const& event) { return true; }
-    virtual void update(sf::Int64 us) {}
-    virtual void draw(sf::RenderWindow& window) const = 0;
+    virtual void update(float dt) {}
+    virtual void draw() const = 0;
 };
 
 #endif

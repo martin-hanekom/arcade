@@ -10,28 +10,19 @@
 namespace game
 {
 
-class Menu: public Entity
+class Game: public Entity
 {
 public:
-    Menu(sf::Vector2f size, sf::Font const& font);
-    void draw(sf::RenderWindow& window) const;
+    Game(sf::Vector2u videoSize, std::string const& title);
+    void run();
+    bool handle(sf::Event const& event);
+    void update(float dt);
+    void draw() const;
 
 private:
+    std::unique_ptr<Entity> game;
     sf::Text main;
     sf::Text menu;
-};
-
-class Game
-{
-public:
-    Game(sf::Vector2f size, std::string const& title);
-    void run();
-
-private:
-    sf::Vector2f size;
-    sf::RenderWindow window;
-    Menu menu;
-    std::unique_ptr<Entity> game;
 };
 
 }

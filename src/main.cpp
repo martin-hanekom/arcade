@@ -1,12 +1,10 @@
 #include <memory>
 #include <SFML/Graphics.hpp>
-//#include "game.hpp"
-//#include "bubbles.hpp"
-#include "resource.hpp"
+#include "game.hpp"
 
 int main(int argc, char** argv)
 {
-    Resource::font();
-    //run(sf::Vector2f(1200.0f, 800.0f), "Arcade", "data/font.ttf");
+    game::Game game(sf::Vector2u(1200u, 800u), "Arcade");
+    game.run();
     return 0;
 }

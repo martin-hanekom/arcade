@@ -1,80 +1,102 @@
 #include "game.hpp"
+#include "resource.hpp"
 #include "bubbles.hpp"
+#include "utils.hpp"
 
 namespace game
 {
 
-Menu::Menu(sf::Vector2f size, sf::Font const& font):
-    main("Welcome to Arcade!", font),
-    menu("Press B to play Bubbles", font)
+Game::Game(sf::Vector2u videoSize, std::string const& title):
+    main("Welcome to Arcade!", Resource::font()),
+    menu("Press B to play Bubbles", Resource::font())
 {
-    main.setCharacterSize(20u);
+    Resource::window.create(sf::VideoMode(videoSize.x, videoSize.y), title);
+    Resource::window.setVerticalSyncEnabled(true);
+    Resource::window.setFramerateLimit(60);
+
+    main.setCharacterSize(30u);
     main.setFillColor(sf::Color::White);
-    menu.setCharacterSize(16u);
+    setOriginMiddle(main);
+    main.setPosition(Resource::videoSize() / 2.0f + sf::Vector2f(0.0f, -30.0f));
+
+    menu.setCharacterSize(14u);
     menu.setFillColor(sf::Color::White);
-    menu.setPosition(sf::Vector2f(0.0f, 22.0f));
-}
-
-void Menu::draw(sf::RenderWindow& window) const
-{
-    window.draw(main);
-    window.draw(menu);
-}
-
-Game::Game(sf::Vector2f size, std::string const& title):
-    size(size), window(sf::VideoMode(size.x, size.y), title)
-{
-    window.setVerticalSyncEnabled(true);
-    window.setFramerateLimit(60);
-
-    if (!font.loadFromFile(fontfile))
-    {
-        throw std::invalid_argument("Font not loaded");
-    }
+    setOriginMiddle(menu);
+    menu.setPosition(Resource::videoSize() / 2.0f + sf::Vector2f(0.0f, 30.0f));
 }
 
 void Game::run()
 {
     sf::Clock clock;
-    sf::Font font;
 
-    Menu menu {size, font};
-    std::unique_ptr<Entity> game {};
-
-    while (window.isOpen())
+    while (Resource::window.isOpen())
     {
         sf::Event event;
-        while (window.pollEvent(event))
+        while (Resource::window.pollEvent(event))
         {
-            if (sf::Event::Closed == event.type)
+            if (!handle(event))
             {
-                window.close();
-            }
-            else if (game)
-            {
-                game->handle(event);
-            }
-            else
-            {
-                if (sf::Event::KeyPressed == event.type)
-                {
-                    switch (event.key.code)
-                    {
-                        case sf::Keyboard::Escape:
-                            window.close();
-                            break;
-                        case sf::Keyboard::B:
-                            game = std::make_unique<Bubbles>(size, font);
-                            break;
-                    }
-                }
+                Resource::window.close();
             }
         }
 
-        window.clear();
-        state.top()->update(clock.restart().asMicroseconds());
-        state.top()->draw(window);
-        window.display();
+        update(clock.restart().asSeconds());
+        draw();
+    }
+}
+
+bool Game::handle(sf::Event const& event)
+{
+
+    if (sf::Event::Closed == event.type)
+    {
+        return false;
+    }
+
+    if (game)
+    {
+        return game->handle(event);
+    }
+
+    if (sf::Event::KeyPressed == event.type)
+    {
+        switch (event.key.code)
+        {
+            case sf::Keyboard::Escape:
+                return false;
+            case sf::Keyboard::B:
+                game.reset(new bubbles::Bubbles());
+                return true;
+            default: return true;
+        }
+    }
+
+    return true;
+}
+
+void Game::update(float dt)
+{
+    if (game)
+    {
+        game->update(dt);
+    }
+}
+
+void Game::draw() const
+{
+    Resource::window.clear();
+
+    if (game)
+    {
+        game->draw();
+    }
+    else
+    {
+        Resource::window.draw(main);
+        Resource::window.draw(menu);
+    }
+
+    Resource::window.display();
 }
 
 }
