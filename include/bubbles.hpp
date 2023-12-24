@@ -9,42 +9,54 @@
 namespace bubbles
 {
 
+class Enemy
+{
+public:
+    Enemy(sf::Vector2f pos) noexcept;
+
+    sf::RectangleShape body;
+};
+
 class Bullet: public Entity
 {
 public:
-    Bullet(sf::Vector2f pos, float angle);
+    Bullet(sf::Vector2f pos, float degrees) noexcept;
+
     void update(float dt);
     void draw() const;
 
+
     static constexpr float Speed {1000.0f};
-    inline static const sf::Vector2f BulletSize {1.0f, 5.0f};
+    inline static const sf::Vector2f BulletSize {5.0f, 1.0f};
 
     sf::RectangleShape body;
-    sf::Vector2f const momentum;
+    sf::Vector2f momentum;
 };
 
 class Player: public Entity
 {
 public:
     Player();
-    bool handle(sf::Event const& event);
     void update(float dt);
     void draw() const;
+
+    sf::Vector2f gunPosition() const;
     void setHealth(int value);
-    sf::Vector2f gunPos() const;
+    void rotateGun();
 
-    static constexpr unsigned MaxHealth {25u};
+    static constexpr int MaxHealth {25};
     static constexpr unsigned HatRadius {10u};
-    inline static const sf::Vector2f GunSize {3.0f, 15.0f};
     static constexpr float Speed {100.0f};
+    inline static const sf::Vector2f GunSize {3.0f, 15.0f};
+    static constexpr float GunOffset {90.0f};
+    static constexpr float MaxCooldown {0.5f};
 
-    int health;
+    int health {MaxHealth};
     sf::Vector2f pos;
     sf::Vector2f momentum;
-    sf::CircleShape body;
-    sf::CircleShape hat;
-    sf::RectangleShape gun;
-    sf::Text info;
+    sf::CircleShape body {MaxHealth};
+    sf::CircleShape hat {HatRadius};
+    sf::RectangleShape gun {Player::GunSize};
 };
 
 class Bubbles: public Entity
@@ -56,9 +68,14 @@ public:
     void draw() const;
 
 private:
+    bool handleKey(sf::Event const& event);
+
     Player player;
     std::vector<Bullet> bullets;
+    std::vector<Enemy> enemies;
+
     sf::Text splash;
+    sf::Text info;
 };
 
 }

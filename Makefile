@@ -1,6 +1,6 @@
 IDIR=include
 CC=g++
-CFLAGS=-I$(IDIR)
+CFLAGS=-I$(IDIR) #--std=c++20
 LIBS=-lsfml-graphics -lsfml-system -lsfml-window
 SOURCES=$(wildcard src/%.cpp) $(wildcard src/*/%.cpp)
 SDIR=src

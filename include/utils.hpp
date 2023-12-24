@@ -4,6 +4,8 @@
 #include <cmath>
 #include <SFML/Graphics.hpp>
 
+static const sf::Vector2f nullVector {0.0f, 0.0f};
+
 inline void setOriginMiddle(sf::Text& text)
 {
     sf::FloatRect bounds {text.getLocalBounds()};

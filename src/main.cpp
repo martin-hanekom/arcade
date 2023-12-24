@@ -4,7 +4,7 @@
 
 int main(int argc, char** argv)
 {
-    game::Game game(sf::Vector2u(1200u, 800u), "Arcade");
+    game::Game game(sf::Vector2u(1600u, 900u), "Arcade");
     game.run();
     return 0;
 }

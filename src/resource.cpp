@@ -1,4 +1,3 @@
-#include <iostream>
 #include "resource.hpp"
 
 sf::Font const& Resource::font()
@@ -19,6 +18,13 @@ sf::Font const& Resource::font()
 sf::Vector2f Resource::videoSize()
 {
     return sf::Vector2f(Resource::window.getSize());
+}
+
+bool Resource::onScreen(sf::Vector2f const& pos)
+{
+    sf::Vector2f videoSize = Resource::videoSize();
+    return (pos.x >= 0 && pos.x < videoSize.x &&
+            pos.y >= 0 && pos.y < videoSize.y);
 }
 
 bool Resource::isKeyPressed(Resource::Key key)
