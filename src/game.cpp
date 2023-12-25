@@ -1,3 +1,5 @@
+#include <cstdlib>
+#include <ctime>
 #include "game.hpp"
 #include "resource.hpp"
 #include "bubbles.hpp"
@@ -27,6 +29,7 @@ Game::Game(sf::Vector2u videoSize, std::string const& title):
 
 void Game::run()
 {
+    std::srand(std::time(nullptr));
     sf::Clock clock;
 
     while (Resource::window.isOpen())

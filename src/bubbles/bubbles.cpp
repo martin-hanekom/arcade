@@ -39,10 +39,41 @@ bool Bubbles::handle(sf::Event const& event)
 
     if (sf::Event::MouseButtonPressed == event.type)
     {
-        bullets.emplace_back(player.gunPosition(), player.gun.getRotation() + Player::GunOffset);
+        if (player.bullets > 0)
+        {
+            --player.bullets;
+            bullets.emplace_back(player.gunPosition(), player.gun.getRotation() + Player::GunOffset);
+            updateInfo();
+        }
     }
 
     return true;
+}
+
+void Bubbles::update(float dt)
+{
+    enemyCooldown -= dt;
+    //bulletCooldown -= dt;
+
+    if (enemyCooldown < 0.0f)
+    {
+        enemies.emplace_back();
+        enemyCooldown = Bubbles::EnemyCooldown;
+    }
+
+    player.update(dt);
+    std::for_each(bullets.begin(), bullets.end(), std::bind(&Bullet::update, std::placeholders::_1, dt));
+    bullets.erase(std::remove_if(bullets.begin(), bullets.end(),
+                                 std::not_fn(std::bind(&Bullet::onScreen, std::placeholders::_1))),
+                  bullets.end());
+}
+
+void Bubbles::draw() const
+{
+    player.draw();
+    std::for_each(bullets.begin(), bullets.end(), std::bind(&Bullet::draw, std::placeholders::_1));
+    std::for_each(enemies.begin(), enemies.end(), std::bind(&Enemy::draw, std::placeholders::_1));
+    Resource::window.draw(info);
 }
 
 bool Bubbles::handleKey(sf::Event const& event)
@@ -70,21 +101,10 @@ bool Bubbles::handleKey(sf::Event const& event)
     return true;
 }
 
-void Bubbles::update(float dt)
+void Bubbles::updateInfo()
 {
-    player.update(dt);
-    std::for_each(bullets.begin(), bullets.end(), std::bind(&Bullet::update, std::placeholders::_1, dt));
-    bullets.erase(std::remove_if(bullets.begin(), bullets.end(),
-                                 [](Bullet bullet) { return !Resource::onScreen(bullet.body.getPosition()); }),
-                  bullets.end());
-    info.setString("Bullets: " + std::to_string(bullets.size()));
-}
-
-void Bubbles::draw() const
-{
-    player.draw();
-    std::for_each(bullets.begin(), bullets.end(), std::bind(&Bullet::draw, std::placeholders::_1));
-    Resource::window.draw(info);
+    info.setString("Health: " + std::to_string(player.health) +
+                   "\nBullets: " + std::to_string(player.bullets));
 }
 
 }

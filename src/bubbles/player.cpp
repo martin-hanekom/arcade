@@ -10,12 +10,12 @@ Player::Player():
 {
     body.setFillColor(sf::Color::White);
     hat.setFillColor(sf::Color::Red);
-    hat.setOrigin(HatRadius, HatRadius);
+    hat.setOrigin(Player::HatRadius, Player::HatRadius);
 
     gun.setFillColor(sf::Color::Magenta);
     gun.setOutlineColor(sf::Color::Yellow);
 
-    setHealth(MaxHealth);
+    setHealth(Player::MaxHealth);
 }
 
 void Player::update(float dt)
@@ -41,10 +41,11 @@ void Player::draw() const
 void Player::setHealth(int value)
 {
     health = value;
+    int const radius = health + Player::HealthOffset;
 
-    body.setRadius(health);
-    body.setOrigin(health, health);
-    gun.setOrigin(-health, 0);
+    body.setRadius(radius);
+    body.setOrigin(radius, radius);
+    gun.setOrigin(-radius, 0);
 }
 
 sf::Vector2f Player::gunPosition() const

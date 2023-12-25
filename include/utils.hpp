@@ -48,4 +48,10 @@ inline float vectorAngle(sf::Vector2<T> vector)
     return angle * copysignf(1.0f, vector.y);
 }
 
+template<class T>
+inline T random(T low, T high)
+{
+    return low + static_cast<T>(std::rand()) / (static_cast<T>(RAND_MAX) / (high - low));
+}
+
 #endif
