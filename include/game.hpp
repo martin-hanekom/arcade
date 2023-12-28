@@ -1,7 +1,6 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include <iostream>
 #include <memory>
 #include <stack>
 #include <SFML/Graphics.hpp>
@@ -23,6 +22,7 @@ private:
     std::unique_ptr<Entity> game;
     sf::Text main;
     sf::Text menu;
+    unsigned counter {0};
 };
 
 }

@@ -13,6 +13,7 @@ public:
         Right,
         Up,
         Down,
+        Reload,
     };
 
     static sf::Font const& font();
@@ -22,12 +23,14 @@ public:
     static sf::Vector2f mousePos();
 
     inline static sf::RenderWindow window;
-    inline static std::array<sf::Keyboard::Key, 4> keys {
+    inline static constexpr std::array<sf::Keyboard::Key, 5> keys {
         sf::Keyboard::A,
         sf::Keyboard::E,
         sf::Keyboard::Comma,
-        sf::Keyboard::O
+        sf::Keyboard::O,
+        sf::Keyboard::P
     };
+    inline static std::array<sf::Keyboard::Key, 5>::const_iterator const moveEnd {std::begin(keys) + 4};
 
     static constexpr std::string_view fontfile {"data/font.ttf"};
 };

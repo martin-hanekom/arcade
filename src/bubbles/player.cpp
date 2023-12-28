@@ -8,14 +8,19 @@ namespace bubbles
 Player::Player():
     pos(Resource::videoSize() / 2.0f)
 {
-    body.setFillColor(sf::Color::White);
-    hat.setFillColor(sf::Color::Red);
+    body.setFillColor(sf::Color::Cyan);
+    hat.setFillColor(sf::Color::Black);
     hat.setOrigin(Player::HatRadius, Player::HatRadius);
 
     gun.setFillColor(sf::Color::Magenta);
     gun.setOutlineColor(sf::Color::Yellow);
 
     setHealth(Player::MaxHealth);
+}
+
+Player::Player(int health): Player()
+{
+    setHealth(health);
 }
 
 void Player::update(float dt)
@@ -38,19 +43,35 @@ void Player::draw() const
     Resource::window.draw(gun);
 }
 
+bool Player::hit(std::shared_ptr<Enemy>& enemy)
+{
+    if (enemy->strikeCooldown > 0.0f)
+    {
+        return false;
+    }
+
+    float radii {body.getRadius() + enemy->body.getRadius()};
+    if (distanceSquared<float>(body.getPosition(), enemy->body.getPosition()) > radii * radii)
+    {
+        return false;
+    }
+
+    setHealth(health - enemy->damage);
+    enemy->strikeCooldown = Enemy::StrikeCooldown;
+    return true;
+}
+
 void Player::setHealth(int value)
 {
     health = value;
-    int const radius = health + Player::HealthOffset;
-
-    body.setRadius(radius);
-    body.setOrigin(radius, radius);
-    gun.setOrigin(-radius, 0);
+    body.setRadius(radius(health));
+    body.setOrigin(radius(health), radius(health));
+    gun.setOrigin(-radius(health), 0);
 }
 
 sf::Vector2f Player::gunPosition() const
 {
-    return pos + polarVector<float>(health, gun.getRotation(), true);
+    return pos + polarVector<float>(radius(health), gun.getRotation(), true);
 }
 
 void Player::rotateGun()

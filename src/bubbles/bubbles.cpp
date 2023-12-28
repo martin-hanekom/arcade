@@ -1,5 +1,6 @@
 #include <functional>
 #include <algorithm>
+#include <numeric>
 #include <vector>
 #include <string>
 
@@ -11,100 +12,110 @@ namespace bubbles
 {
 
 Bubbles::Bubbles():
-    splash("Press Space to Play!", Resource::font()),
-    info("Health", Resource::font())
+    splash("Bubbles Shooter\n---------------", Resource::font()),
+    pauseMenu("Play - <Space>\n\nExit - <Esc>", Resource::font()),
+    info("Health", Resource::font()),
+    endSummary("Game over!", Resource::font())
 {
-    splash.setCharacterSize(20u);
+    splash.setCharacterSize(24u);
     splash.setFillColor(sf::Color::White);
     setOriginMiddle(splash);
-    splash.setPosition(Resource::videoSize() / 2.0f);
+    splash.setPosition(Resource::videoSize() / 2.0f + sf::Vector2f(0.0f, -100.0f));
+
+    pauseMenu.setCharacterSize(16u);
+    pauseMenu.setFillColor(sf::Color::White);
+    setOriginMiddle(pauseMenu);
+    pauseMenu.setPosition(Resource::videoSize() / 2.0f);
 
     info.setCharacterSize(12u);
     info.setFillColor(sf::Color::White);
     info.setPosition(sf::Vector2f(5.0f, 5.0f));
+
+    endSummary.setCharacterSize(16u);
+    endSummary.setFillColor(sf::Color::White);
+    setOriginMiddle(endSummary);
+    endSummary.setPosition(Resource::videoSize() / 2.0f + sf::Vector2f(-50.0f, -100.0f));
 }
 
 bool Bubbles::handle(sf::Event const& event)
 {
-    if (sf::Event::KeyPressed == event.type ||
-        sf::Event::KeyReleased == event.type)
-    {
-        return handleKey(event);
-    }
-
-    if (sf::Event::MouseMoved == event.type)
-    {
-        player.rotateGun();
-    }
-
-    if (sf::Event::MouseButtonPressed == event.type)
-    {
-        if (player.bullets > 0)
-        {
-            --player.bullets;
-            bullets.emplace_back(player.gunPosition(), player.gun.getRotation() + Player::GunOffset);
-            updateInfo();
-        }
-    }
-
-    return true;
+    return action[static_cast<unsigned>(state)]->handle(event);
 }
 
 void Bubbles::update(float dt)
 {
-    enemyCooldown -= dt;
-    //bulletCooldown -= dt;
-
-    if (enemyCooldown < 0.0f)
-    {
-        enemies.emplace_back();
-        enemyCooldown = Bubbles::EnemyCooldown;
-    }
-
-    player.update(dt);
-    std::for_each(bullets.begin(), bullets.end(), std::bind(&Bullet::update, std::placeholders::_1, dt));
-    bullets.erase(std::remove_if(bullets.begin(), bullets.end(),
-                                 std::not_fn(std::bind(&Bullet::onScreen, std::placeholders::_1))),
-                  bullets.end());
+    action[static_cast<unsigned>(state)]->update(dt);
 }
 
 void Bubbles::draw() const
 {
-    player.draw();
-    std::for_each(bullets.begin(), bullets.end(), std::bind(&Bullet::draw, std::placeholders::_1));
-    std::for_each(enemies.begin(), enemies.end(), std::bind(&Enemy::draw, std::placeholders::_1));
-    Resource::window.draw(info);
+    action[static_cast<unsigned>(state)]->draw();
 }
 
-bool Bubbles::handleKey(sf::Event const& event)
+void Bubbles::reset()
 {
-    if (std::find(std::begin(Resource::keys), std::end(Resource::keys), event.key.code))
+    player = std::move(Player());
+    bullets.clear();
+    enemies.clear();
+    enemyCooldown = Bubbles::EnemyCooldown;
+    bulletCooldown = Bubbles::BulletCooldown;
+}
+
+void Bubbles::end()
+{
+    state = Bubbles::State::End;
+    endSummary.setString("  Game over!\n\nYou killed " + std::to_string(player.kills) + " enemies");
+}
+
+void Bubbles::spawnEnemy(float const dt)
+{
+    enemyCooldown -= dt;
+    if (enemyCooldown < 0.0f)
     {
-        player.momentum.x = (Resource::isKeyPressed(Resource::Key::Left))
-            ? Player::Speed
-            : (Resource::isKeyPressed(Resource::Key::Right))
-            ? -Player::Speed
-            : 0.0f;
+        switch (random<unsigned>(0, 2))
+        {
+            case 1:
+                enemies.emplace_back(std::make_shared<MultiEnemy>());
+                break;
+            default:
+                enemies.emplace_back(std::make_shared<Enemy>());
+                break;
+        }
 
-        player.momentum.y = (Resource::isKeyPressed(Resource::Key::Down))
-            ? Player::Speed
-            : (Resource::isKeyPressed(Resource::Key::Up))
-            ? -Player::Speed
-            : 0.0f;
+        enemyCooldown = random<float>(Bubbles::EnemyCooldown / 2.0f, Bubbles::EnemyCooldown);
     }
+}
 
-    if (sf::Keyboard::Escape == event.key.code)
+void Bubbles::reload()
+{
+    if (player.cash >= Player::Reload)
     {
-        return false;
+        player.cash -= Player::Reload;
+        player.bullets += Player::Reload;
     }
-
-    return true;
 }
 
 void Bubbles::updateInfo()
 {
-    info.setString("Health: " + std::to_string(player.health) +
-                   "\nBullets: " + std::to_string(player.bullets));
+    static Player oldPlayer {0};
+
+    if (oldPlayer.cash == player.cash &&
+        oldPlayer.health == player.health &&
+        oldPlayer.bullets == player.bullets &&
+        oldPlayer.kills == player.kills)
+    {
+        return;
+    }
+
+    info.setString("Cash: $" + std::to_string(player.cash) +
+                   "\n\nHealth: " + std::to_string(player.health) +
+                   "\n\nBullets: " + std::to_string(player.bullets) +
+                   "\n\nKills: " + std::to_string(player.kills));
+
+    oldPlayer.cash = player.cash;
+    oldPlayer.health = player.health;
+    oldPlayer.bullets = player.bullets;
+    oldPlayer.kills = player.kills;
 }
 
 }
