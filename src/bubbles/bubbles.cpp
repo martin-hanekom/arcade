@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 
-#include "bubbles.hpp"
+#include "bubbles/bubbles.hpp"
 #include "resource.hpp"
 #include "utils.hpp"
 
@@ -55,10 +55,11 @@ void Bubbles::draw() const
 void Bubbles::reset()
 {
     player = std::move(Player());
-    bullets.clear();
+    shots.clear();
     enemies.clear();
     enemyCooldown = Bubbles::EnemyCooldown;
-    bulletCooldown = Bubbles::BulletCooldown;
+    player.bulletCooldown.first = 0.0f;
+    player.bulletCooldown.second = 0.0f;
 }
 
 void Bubbles::end()
@@ -67,18 +68,52 @@ void Bubbles::end()
     endSummary.setString("  Game over!\n\nYou killed " + std::to_string(player.kills) + " enemies");
 }
 
+void Bubbles::shoot(float dt)
+{
+    if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
+    {
+        player.bulletCooldown.first -= dt;
+        if (player.bulletCooldown.first <= 0.0f)
+        {
+            player.bulletCooldown.first = Bullet::cooldown();
+            shots.emplace_back(std::make_shared<Bullet>(player.gunPosition(), player.gun.getRotation() + Player::GunOffset));
+        }
+    }
+    else
+    {
+        player.bulletCooldown.first = 0.0f;
+    }
+
+    if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Right))
+    {
+        player.bulletCooldown.second -= dt;
+        if (player.bulletCooldown.second <= 0.0f)
+        {
+            player.bulletCooldown.second = Grenade::cooldown();
+            shots.emplace_back(std::make_shared<Grenade>(player.gunPosition(), player.gun.getRotation() + Player::GunOffset));
+        }
+    }
+    else
+    {
+        player.bulletCooldown.second = 0.0f;
+    }
+}
+
 void Bubbles::spawnEnemy(float const dt)
 {
     enemyCooldown -= dt;
     if (enemyCooldown < 0.0f)
     {
-        switch (random<unsigned>(0, 2))
+        switch (random<unsigned>(0, 5))
         {
             case 1:
-                enemies.emplace_back(std::make_shared<MultiEnemy>());
+                enemies.emplace_back(std::make_shared<MultiEnemy>(this));
+                break;
+            case 2:
+                enemies.emplace_back(std::make_shared<LifeEnemy>(this));
                 break;
             default:
-                enemies.emplace_back(std::make_shared<Enemy>());
+                enemies.emplace_back(std::make_shared<Enemy>(this));
                 break;
         }
 

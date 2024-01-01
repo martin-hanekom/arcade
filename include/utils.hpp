@@ -55,6 +55,19 @@ inline float vectorAngle(sf::Vector2<T> vector)
     return angle * copysignf(1.0f, vector.y);
 }
 
+template<class T>
+inline sf::Vector2<T> unitVector(sf::Vector2<T> vector)
+{
+    float const abs {vectorAbs(vector)};
+
+    if (abs == 0)
+    {
+        return {0, 0};
+    }
+
+    return vector / vectorAbs(vector);
+}
+
 template<typename T, std::enable_if_t<std::is_integral<T>::value, bool> = true>
 inline T random(T const low, T const high)
 {

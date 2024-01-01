@@ -1,7 +1,7 @@
 #include <functional>
 #include <algorithm>
 #include <numeric>
-#include "bubbles.hpp"
+#include "bubbles/bubbles.hpp"
 #include "resource.hpp"
 #include "utils.hpp"
 
@@ -68,35 +68,13 @@ bool PlayAction::handle(sf::Event const& event)
         sf::Event::KeyReleased == event.type) &&
         std::find(std::begin(Resource::keys), Resource::moveEnd, event.key.code))
     {
-        game->player.momentum.x = (Resource::isKeyPressed(Resource::Key::Right))
-            ? Player::Speed
-            : (Resource::isKeyPressed(Resource::Key::Left))
-            ? -Player::Speed
-            : 0.0f;
-
-        game->player.momentum.y = (Resource::isKeyPressed(Resource::Key::Down))
-            ? Player::Speed
-            : (Resource::isKeyPressed(Resource::Key::Up))
-            ? -Player::Speed
-            : 0.0f;
-
+        game->player.setSpeed();
         return true;
     }
 
     if (sf::Event::MouseMoved == event.type)
     {
         game->player.rotateGun();
-        return true;
-    }
-
-    if (sf::Event::MouseButtonPressed == event.type)
-    {
-        if (game->player.bullets > 0)
-        {
-            --game->player.bullets;
-            game->bullets.emplace_back(std::make_shared<Bullet>(game->player.gunPosition(), game->player.gun.getRotation() + Player::GunOffset));
-        }
-
         return true;
     }
 
@@ -107,21 +85,22 @@ void PlayAction::update(float dt)
 {
     //bulletCooldown -= dt;
 
+    game->shoot(dt);
     game->player.update(dt);
     std::for_each(game->enemies.begin(), game->enemies.end(), std::bind(&Enemy::update, std::placeholders::_1, dt, game->player.pos));
-    std::for_each(game->bullets.begin(), game->bullets.end(), std::bind(&Bullet::update, std::placeholders::_1, dt));
+    std::for_each(game->shots.begin(), game->shots.end(), std::bind(&Bullet::update, std::placeholders::_1, dt));
 
-    game->bullets.remove_if(std::not_fn(std::bind(&Bullet::onScreen, std::placeholders::_1)));
-    std::for_each(game->bullets.begin(), game->bullets.end(), [&enemies = game->enemies](std::shared_ptr<Bullet>& bullet) {
+    game->shots.remove_if(std::not_fn(std::bind(&Bullet::onScreen, std::placeholders::_1)));
+    std::for_each(game->shots.begin(), game->shots.end(), [&enemies = game->enemies](std::shared_ptr<Bullet>& bullet) {
         std::for_each(enemies.begin(), enemies.end(), [&bullet](std::shared_ptr<Enemy>& enemy) { enemy->hit(bullet); });
     });
-    game->bullets.remove_if([](std::shared_ptr<Bullet> const& bullet) { return bullet->used; });
+    game->shots.remove_if([](std::shared_ptr<Bullet> const& bullet) { return bullet->used; });
 
     auto constexpr noHealth = [](std::shared_ptr<Enemy> const& enemy) { return enemy->health <= 0; };
 
     std::list<std::shared_ptr<Enemy>> dead;
     std::copy_if(game->enemies.begin(), game->enemies.end(), std::back_inserter(dead), noHealth);
-    std::for_each(dead.begin(), dead.end(), std::bind(&Enemy::die, std::placeholders::_1, game));
+    std::for_each(dead.begin(), dead.end(), std::bind(&Enemy::die, std::placeholders::_1));
 
     game->player.kills += dead.size();
     game->player.cash = std::accumulate(dead.begin(), dead.end(), game->player.cash,
@@ -144,7 +123,7 @@ void PlayAction::draw() const
 {
     game->player.draw();
     std::for_each(game->enemies.cbegin(), game->enemies.cend(), std::bind(&Enemy::draw, std::placeholders::_1));
-    std::for_each(game->bullets.cbegin(), game->bullets.cend(), std::bind(&Bullet::draw, std::placeholders::_1));
+    std::for_each(game->shots.cbegin(), game->shots.cend(), std::bind(&Bullet::draw, std::placeholders::_1));
     Resource::window.draw(game->info);
 }
 

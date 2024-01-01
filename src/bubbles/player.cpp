@@ -1,4 +1,4 @@
-#include "bubbles.hpp"
+#include "bubbles/bubbles.hpp"
 #include "resource.hpp"
 #include "utils.hpp"
 
@@ -8,12 +8,21 @@ namespace bubbles
 Player::Player():
     pos(Resource::videoSize() / 2.0f)
 {
-    body.setFillColor(sf::Color::Cyan);
-    hat.setFillColor(sf::Color::Black);
+    body.setFillColor(Player::Skin);
+
+    /*
+    hat.setOutlineThickness(3.0f);
+    hat.setOutlineColor(sf::Color::White);
+    hat.setFillColor(Player::Skin);
     hat.setOrigin(Player::HatRadius, Player::HatRadius);
 
-    gun.setFillColor(sf::Color::Magenta);
-    gun.setOutlineColor(sf::Color::Yellow);
+    eyes.first.setFillColor(sf::Color::White);
+    eyes.first.setOrigin(Player::EyeRadius - 5.0f, Player::EyeRadius - 8.0f);
+    eyes.second.setFillColor(sf::Color::White);
+    eyes.second.setOrigin(Player::EyeRadius - 5.0f, Player::EyeRadius + 8.0f);
+    */
+
+    gun.setFillColor(sf::Color::White);
 
     setHealth(Player::MaxHealth);
 }
@@ -27,7 +36,9 @@ void Player::update(float dt)
 {
     pos += momentum * dt;
     body.setPosition(pos);
-    hat.setPosition(pos);
+    //eyes.first.setPosition(pos);
+    //eyes.second.setPosition(pos);
+    //hat.setPosition(pos);
     gun.setPosition(pos);
 
     if (nullVector != momentum)
@@ -39,8 +50,10 @@ void Player::update(float dt)
 void Player::draw() const
 {
     Resource::window.draw(body);
-    Resource::window.draw(hat);
     Resource::window.draw(gun);
+    //Resource::window.draw(hat);
+    //Resource::window.draw(eyes.first);
+    //Resource::window.draw(eyes.second);
 }
 
 bool Player::hit(std::shared_ptr<Enemy>& enemy)
@@ -67,6 +80,23 @@ void Player::setHealth(int value)
     body.setRadius(radius(health));
     body.setOrigin(radius(health), radius(health));
     gun.setOrigin(-radius(health), 0);
+    setSpeed();
+}
+
+void Player::setSpeed()
+{
+    sf::Vector2f const direction {(Resource::isKeyPressed(Resource::Key::Right))
+            ? 1.0f
+            : (Resource::isKeyPressed(Resource::Key::Left))
+            ? -1.0f
+            : 0.0f,
+        (Resource::isKeyPressed(Resource::Key::Down))
+            ? 1.0f
+            : (Resource::isKeyPressed(Resource::Key::Up))
+            ? -1.0f
+            : 0.0f};
+
+    momentum = (Player::SpeedOffset - Player::SpeedRatio * health) * unitVector(direction);
 }
 
 sf::Vector2f Player::gunPosition() const
@@ -76,8 +106,11 @@ sf::Vector2f Player::gunPosition() const
 
 void Player::rotateGun()
 {
-    sf::Vector2f direction {Resource::mousePos() - gunPosition()};
-    gun.setRotation(toDegrees(vectorAngle(direction)) - Player::GunOffset);
+    float const direction {toDegrees(vectorAngle(Resource::mousePos() - gunPosition()))};
+    gun.setRotation(direction - Player::GunOffset);
+    //eyes.first.setRotation(direction);
+    //eyes.second.setRotation(direction);
+    //hat.setRotation(direction);
 }
 
 }

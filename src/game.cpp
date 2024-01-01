@@ -5,7 +5,7 @@
 #include <iomanip>
 #include "game.hpp"
 #include "resource.hpp"
-#include "bubbles.hpp"
+#include "bubbles/bubbles.hpp"
 #include "utils.hpp"
 
 namespace game
@@ -13,11 +13,12 @@ namespace game
 
 Game::Game(sf::Vector2u videoSize, std::string const& title):
     main("Welcome to Arcade\n-----------------", Resource::font()),
-    menu("Bubbles - <B>", Resource::font())
+    menu("Bubbles - <B>\n\nExit - <Esc>", Resource::font())
 {
     Resource::window.create(sf::VideoMode(videoSize.x, videoSize.y), title);
     Resource::window.setVerticalSyncEnabled(true);
     Resource::window.setFramerateLimit(60);
+    Resource::window.setKeyRepeatEnabled(false);
 
     main.setCharacterSize(24u);
     main.setFillColor(sf::Color::White);
@@ -99,7 +100,7 @@ void Game::update(float dt)
             counter = 0;
             auto const end {std::chrono::high_resolution_clock::now()};
             std::chrono::duration<float, std::micro> interval {end - start};
-            std::cout << "\r" << fus << " us | " << std::setw(8) << interval.count() << " us" << std::flush;
+            //std::cout << "\r" << fus << " us | " << std::setw(8) << interval.count() << " us" << std::flush;
         }
     }
 }

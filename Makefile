@@ -6,12 +6,6 @@ SOURCES=$(wildcard src/%.cpp) $(wildcard src/*/%.cpp)
 SDIR=src
 ODIR=build
 
-_DEPS=*.hpp
-DEPS=$(patsubst %,$(IDIR)/%,$(_DEPS))
-
-_OBJ=main.o game.o resource.o bubbles.o player.o
-OBJ=$(patsubst %,$(ODIR)/%,$(_OBJ))
-
 sources := $(wildcard $(SDIR)/*.cpp) $(wildcard $(SDIR)/*/*.cpp)
 objects := $(patsubst $(SDIR)/%.cpp,$(ODIR)/%.o,$(sources))
 

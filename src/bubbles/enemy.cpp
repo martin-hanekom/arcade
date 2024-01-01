@@ -1,24 +1,28 @@
 #include <cstdlib>
-#include "bubbles.hpp"
+#include "bubbles/bubbles.hpp"
 #include "resource.hpp"
 #include "utils.hpp"
 
 namespace bubbles
 {
 
-Enemy::Enemy(): Enemy(borderPosition())
+Enemy::Enemy(Bubbles* game):
+    Enemy(game, borderPosition(), random<int>(Enemy::MinHealth, Enemy::MaxHealth))
 {
 }
 
-Enemy::Enemy(sf::Vector2f pos):
-    originalHealth(random<int>(Enemy::MinHealth, Enemy::MaxHealth)),
-    body(radius(health))
+Enemy::Enemy(Bubbles* game, sf::Vector2f pos, int health):
+    game(game),
+    originalHealth(health)
 {
-    body.setFillColor(sf::Color::Yellow);
     body.setPosition(pos);
-    body.setOrigin(radius(health), radius(health));
-
     setHealth(originalHealth);
+    setup();
+}
+
+void Enemy::setup()
+{
+    body.setFillColor(sf::Color::Red + sf::Color::Yellow);
 }
 
 void Enemy::update(float dt, sf::Vector2f const playerPos)
@@ -27,7 +31,7 @@ void Enemy::update(float dt, sf::Vector2f const playerPos)
     {
         updateCounter = Enemy::MaxCounter;
         sf::Vector2f direction {playerPos - body.getPosition()};
-        momentum = Enemy::SpeedOffset * direction / vectorAbs(direction);
+        momentum = (Enemy::SpeedOffset - Enemy::SpeedRatio * health) * direction / vectorAbs(direction);
     }
 
     body.move(momentum * dt);
@@ -50,7 +54,7 @@ bool Enemy::hit(std::shared_ptr<Bullet>& bullet)
     return true;
 }
 
-void Enemy::die(Bubbles* game)
+void Enemy::die()
 {
 }
 
@@ -88,19 +92,53 @@ sf::Vector2f Enemy::borderPosition() const
     }
 }
 
-MultiEnemy::MultiEnemy(): MultiEnemy(borderPosition())
+MultiEnemy::MultiEnemy(Bubbles* game):
+    Enemy(game)
 {
+    setup();
 }
 
-MultiEnemy::MultiEnemy(sf::Vector2f pos): Enemy(pos)
+MultiEnemy::MultiEnemy(Bubbles* game, sf::Vector2f pos, int health):
+    Enemy(game, pos, health)
+{
+    setup();
+}
+
+void MultiEnemy::setup()
 {
     body.setFillColor(sf::Color::Red);
 }
 
-void MultiEnemy::die(Bubbles* game)
+bool MultiEnemy::hit(std::shared_ptr<Bullet>& bullet)
 {
-    game->enemies.emplace_back(std::make_shared<Enemy>(body.getPosition() + randomVector2<float>(-20.0f, 20.0f)));
-    game->enemies.emplace_back(std::make_shared<Enemy>(body.getPosition() + randomVector2<float>(-20.0f, 20.0f)));
+    if (!Enemy::hit(bullet))
+    {
+        return false;
+    }
+
+    game->enemies.emplace_back(std::make_shared<MultiEnemy>(game, body.getPosition() + polarVector<float>(radius(health) * 2, random<float>(0.0f, M_PI * 2)), health));
+    return true;
+}
+
+LifeEnemy::LifeEnemy(Bubbles* game):
+    Enemy(game)
+{
+    setup();
+}
+
+LifeEnemy::LifeEnemy(Bubbles* game, sf::Vector2f pos, int health):
+    Enemy(game, pos, health)
+{
+    setup();
+}
+
+void LifeEnemy::setup()
+{
+    body.setFillColor(sf::Color::Magenta);
+}
+
+void LifeEnemy::die()
+{
 }
 
 }
