@@ -9,13 +9,11 @@ namespace bubbles
 class Shot
 {
 public:
-    Shot(sf::Vector2f pos, float degrees);
+    Shot(sf::Vector2f pos, sf::Vector2f momentum);
     void update(float dt);
     void draw() const;
     bool onScreen() const;
 
-    virtual float cooldown() const = 0;
-    virtual float speed() const = 0;
     virtual int damage() const = 0;
 
     sf::CircleShape body;
@@ -28,8 +26,8 @@ class Bullet: public Shot
 public:
     Bullet(sf::Vector2f pos, float degrees);
 
-    float cooldown() const override { return 0.2f; }
-    float speed() const override { return 500.0f; }
+    static constexpr float Cooldown {0.2f};
+    static constexpr float Speed {500.0f};
     int damage() const override { return 1; }
 };
 
@@ -38,8 +36,10 @@ class Grenade: public Shot
 public:
     Grenade(sf::Vector2f pos, float degrees);
 
-    float cooldown() const override { return 3.0f; }
-    float speed() const override { return 200.0f; }
+    static constexpr float Cooldown {3.0f};
+    static constexpr float Speed {200.0f};
+    static constexpr int Price {10};
+
     int damage() const override { return 2; }
 };
 

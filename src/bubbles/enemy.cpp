@@ -42,15 +42,15 @@ void Enemy::draw() const
     Resource::window.draw(body);
 }
 
-bool Enemy::hit(std::shared_ptr<Bullet>& bullet)
+bool Enemy::hit(std::shared_ptr<Shot>& shot)
 {
-    if (distanceSquared<float>(body.getPosition(), bullet->body.getPosition()) > body.getRadius() * body.getRadius())
+    if (distanceSquared<float>(body.getPosition(), shot->body.getPosition()) > body.getRadius() * body.getRadius())
     {
         return false;
     }
 
-    bullet->used = true;
-    setHealth(health - bullet->damage);
+    shot->used = true;
+    setHealth(health - shot->damage());
     return true;
 }
 
@@ -109,9 +109,9 @@ void MultiEnemy::setup()
     body.setFillColor(sf::Color::Red);
 }
 
-bool MultiEnemy::hit(std::shared_ptr<Bullet>& bullet)
+bool MultiEnemy::hit(std::shared_ptr<Shot>& shot)
 {
-    if (!Enemy::hit(bullet))
+    if (!Enemy::hit(shot))
     {
         return false;
     }

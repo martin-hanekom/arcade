@@ -75,7 +75,7 @@ void Bubbles::shoot(float dt)
         player.bulletCooldown.first -= dt;
         if (player.bulletCooldown.first <= 0.0f)
         {
-            player.bulletCooldown.first = Bullet::cooldown();
+            player.bulletCooldown.first = Bullet::Cooldown;
             shots.emplace_back(std::make_shared<Bullet>(player.gunPosition(), player.gun.getRotation() + Player::GunOffset));
         }
     }
@@ -87,9 +87,10 @@ void Bubbles::shoot(float dt)
     if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Right))
     {
         player.bulletCooldown.second -= dt;
-        if (player.bulletCooldown.second <= 0.0f)
+        if (player.bulletCooldown.second <= 0.0f && player.cash >= Grenade::Price)
         {
-            player.bulletCooldown.second = Grenade::cooldown();
+            player.cash -= Grenade::Price;
+            player.bulletCooldown.second = Grenade::Cooldown;
             shots.emplace_back(std::make_shared<Grenade>(player.gunPosition(), player.gun.getRotation() + Player::GunOffset));
         }
     }

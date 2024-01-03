@@ -18,7 +18,7 @@ public:
     void draw() const;
 
     virtual void setup();
-    virtual bool hit(std::shared_ptr<Bullet>& bullet);
+    virtual bool hit(std::shared_ptr<Shot>& shot);
     virtual void die();
     void setHealth(int value);
     int killReward() const;
@@ -53,7 +53,7 @@ public:
     MultiEnemy(Bubbles* game, sf::Vector2f pos, int health);
 
     void setup() override;
-    bool hit(std::shared_ptr<Bullet>& bullet) override;
+    bool hit(std::shared_ptr<Shot>& shot) override;
 };
 
 class LifeEnemy: public Enemy

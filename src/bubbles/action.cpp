@@ -91,10 +91,10 @@ void PlayAction::update(float dt)
     std::for_each(game->shots.begin(), game->shots.end(), std::bind(&Bullet::update, std::placeholders::_1, dt));
 
     game->shots.remove_if(std::not_fn(std::bind(&Bullet::onScreen, std::placeholders::_1)));
-    std::for_each(game->shots.begin(), game->shots.end(), [&enemies = game->enemies](std::shared_ptr<Bullet>& bullet) {
-        std::for_each(enemies.begin(), enemies.end(), [&bullet](std::shared_ptr<Enemy>& enemy) { enemy->hit(bullet); });
+    std::for_each(game->shots.begin(), game->shots.end(), [&enemies = game->enemies](std::shared_ptr<Shot>& shot) {
+        std::for_each(enemies.begin(), enemies.end(), [&shot](std::shared_ptr<Enemy>& enemy) { enemy->hit(shot); });
     });
-    game->shots.remove_if([](std::shared_ptr<Bullet> const& bullet) { return bullet->used; });
+    game->shots.remove_if([](std::shared_ptr<Shot> const& shot) { return shot->used; });
 
     auto constexpr noHealth = [](std::shared_ptr<Enemy> const& enemy) { return enemy->health <= 0; };
 
@@ -123,7 +123,7 @@ void PlayAction::draw() const
 {
     game->player.draw();
     std::for_each(game->enemies.cbegin(), game->enemies.cend(), std::bind(&Enemy::draw, std::placeholders::_1));
-    std::for_each(game->shots.cbegin(), game->shots.cend(), std::bind(&Bullet::draw, std::placeholders::_1));
+    std::for_each(game->shots.cbegin(), game->shots.cend(), std::bind(&Shot::draw, std::placeholders::_1));
     Resource::window.draw(game->info);
 }
 
